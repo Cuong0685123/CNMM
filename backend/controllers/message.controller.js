@@ -83,43 +83,35 @@ export const getMessages = async (req, res) => {
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
-export const upload = async (req) => {
+export const upload = async (req,res) => {
     const uploadedFiles = [];
-    
     try {
-        // Kiểm tra xem yêu cầu có chứa files không
-        if (!req.files || Object.keys(req.files).length === 0) {
-            throw new Error('No files were uploaded.');
+        const files = req.files
+		console.log(files)
+        if (!files) {
+            throw new Error('No files found in the request');
         }
 
-        // Lặp qua từng file trong req.files
-        for (const key in req.files) {
-            if (Object.hasOwnProperty.call(req.files, key)) {
-                const file = req.files[key];
+        for (const key in files) {
+            if (Object.hasOwnProperty.call(files, key)) {
+                const filePath = files[key].path;
+                if (filePath) {
+                    const fileData = fs.readFileSync(filePath); // Đọc dữ liệu từ file
+                    const fileName = files[key].originalname;
 
-                // Kiểm tra xem file có tồn tại hay không
-                if (!file) {
-                    console.error('No file found with key:', key);
-                    continue; // Bỏ qua file nếu không tìm thấy
+                    // Chuyển đổi dữ liệu từ Buffer sang kiểu dữ liệu phù hợp
+                    const fileBody = fileData instanceof Buffer ? fileData : Buffer.from(fileData, 'binary');
+
+                    const fileUrl = await upload(fileBody, fileName); // Thay uploadToS3 bằng hàm upload thực tế
+                    uploadedFiles.push(fileUrl);
+                } else {
+                    console.error('filePath is not found for file with key:', key);
                 }
-
-                const filePath = file.path;
-
-                // Đọc dữ liệu từ file
-                const fileData = fs.readFileSync(filePath);
-
-                // Tiếp tục xử lý dữ liệu file và upload lên S3 hoặc nơi lưu trữ khác
-                const fileName = file.originalname;
-                const fileUrl = await uploadToS3(fileData, fileName); // Thay uploadToS3 bằng hàm upload thực tế
-
-                // Thêm fileUrl vào mảng uploadedFiles
-                uploadedFiles.push(fileUrl);
             }
         }
     } catch (error) {
-        console.error('Error uploading files:', error);
+        console.error('Error uploading file:', error);
     }
-
     return uploadedFiles;
 };
 
@@ -144,5 +136,44 @@ export const getallmess = async (req, res) =>{
 
       return res.status(200).json({data: messages})
 }
+
+export const revokedMessage = async (req, res)=>{
+	try {
+		const {senderId} =req.params;
+	console.log({senderId});
+	const message = await Message.findById(senderId);
+	if(!message){
+		return res.status(404).json({error:'Message not found'});
+	}
+	await Message.findByIdAndDelete(senderId);
+	res.status(200).json({succes:true,message:"Message delete successfully"});
+	} catch (error) {
+		console.error('Error revoking message:', error);
+		res.status(500).json({ error: 'Internal server error' });
+	}  
+	};
+
+	export const deleteMessage = async(req, res)=>{
+
+		try {
+			const senderId = req.params;
+		
+			// Kiểm tra xem tin nhắn tồn tại không
+			const message = await Message.findById(senderId);
+			if (!message) {
+			  return res.status(404).json({ error: 'Message not found' });
+			}
+		
+			// Đặt thời gian deleteAt của tin nhắn là thời gian hiện tại
+			message.deleteAt = new Date();
+			await message.save();
+		
+			res.status(200).json({ success: true, message: 'Message deleted successfully' });
+		  } catch (error) {
+			console.error('Error deleting message:', error);
+			res.status(500).json({ error: 'Internal server error' });
+		  }
+		};
+	
 
 

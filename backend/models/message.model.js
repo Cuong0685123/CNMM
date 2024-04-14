@@ -19,7 +19,14 @@ const messageSchema = new mongoose.Schema(
 		},
 		files:{
 			type: [String],
-		}
+			require:true,
+		},
+		recallAt: {
+			type: Date,
+		  },
+		  deleteAt: {
+			type: Date,
+		  },
 		// createdAt, updatedAt
 	},
 	{ timestamps: true }
