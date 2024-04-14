@@ -2,6 +2,21 @@ import multer from "multer";
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
+import AWS from "aws-sdk";
+import fs from "fs";
+
+const s3 = new AWS.S3();
+
+const bucketName = process.env.S3_BUCKET_NAME;
+AWS.config.update({
+    region: process.env.REGION,
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
+});
+
+
+
+
 
 export const sendMessage = async (req, res) => {
 	try {
@@ -68,23 +83,62 @@ export const getMessages = async (req, res) => {
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
+export const upload = async (req) => {
+    const uploadedFiles = [];
+    
+    try {
+        // Kiểm tra xem yêu cầu có chứa files không
+        if (!req.files || Object.keys(req.files).length === 0) {
+            throw new Error('No files were uploaded.');
+        }
+
+        // Lặp qua từng file trong req.files
+        for (const key in req.files) {
+            if (Object.hasOwnProperty.call(req.files, key)) {
+                const file = req.files[key];
+
+                // Kiểm tra xem file có tồn tại hay không
+                if (!file) {
+                    console.error('No file found with key:', key);
+                    continue; // Bỏ qua file nếu không tìm thấy
+                }
+
+                const filePath = file.path;
+
+                // Đọc dữ liệu từ file
+                const fileData = fs.readFileSync(filePath);
+
+                // Tiếp tục xử lý dữ liệu file và upload lên S3 hoặc nơi lưu trữ khác
+                const fileName = file.originalname;
+                const fileUrl = await uploadToS3(fileData, fileName); // Thay uploadToS3 bằng hàm upload thực tế
+
+                // Thêm fileUrl vào mảng uploadedFiles
+                uploadedFiles.push(fileUrl);
+            }
+        }
+    } catch (error) {
+        console.error('Error uploading files:', error);
+    }
+
+    return uploadedFiles;
+};
 
 export const createMessage = async (req, res) =>{
 	const {conversationId, senderId, text} = req.body;
-	
-	console.log(req.files);
+	const files = req.files
+	console.log(files);
   const message = await Message.create({
     conversationId: conversationId,
 	senderId, text
   });
-  return res.status(201).json({data: message });
+  const uploadedFilesUrls = await upload(files);
+  return res.status(201).json({data: message, uploadedFiles: uploadedFilesUrls });
 }
 export const getallmess = async (req, res) =>{
 	const{conversationId} = req.params;
     console.log({conversationId});
       
       const arrayCondition = [conversationId];
-      
       
       const messages = await Message.find({ conversationId: { $in: arrayCondition } });
 
