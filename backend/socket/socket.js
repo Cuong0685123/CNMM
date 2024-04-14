@@ -1,9 +1,15 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
+import bodyParser from "body-parser";
 
 const app = express();
+// for parsing application/json
+app.use(bodyParser.json()); 
 
+// for parsing application/xwww-
+app.use(bodyParser.urlencoded({ extended: true })); 
+//form-urlencoded
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {

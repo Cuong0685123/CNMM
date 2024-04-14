@@ -7,15 +7,19 @@ const messageSchema = new mongoose.Schema(
 			ref: "User",
 			required: true,
 		},
-		receiverId: {
+		conversationId:{
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
+			ref: "Conversation",
 			required: true,
 		},
-		message: {
+	
+		text: {
 			type: String,
-			required: true,
+			
 		},
+		files:{
+			type: [String],
+		}
 		// createdAt, updatedAt
 	},
 	{ timestamps: true }

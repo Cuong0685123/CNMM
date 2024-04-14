@@ -1,10 +1,14 @@
 import express from "express";
-import { getMessages, sendMessage } from "../controllers/message.controller.js";
+import { createMessage, getMessages, getallmess, sendMessage } from "../controllers/message.controller.js";
 import protectRoute from "../middleware/protectRoute.js";
+import multer from "multer";
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/' });
 
 router.get("/:id", protectRoute, getMessages);
 router.post("/send/:id", protectRoute, sendMessage);
+router.post("/", upload.array('files'),createMessage);
+router.get('/:conversationId/conversation',getallmess );
 
 export default router;

@@ -1,3 +1,4 @@
+import multer from "multer";
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
@@ -68,6 +69,25 @@ export const getMessages = async (req, res) => {
 	}
 };
 
+export const createMessage = async (req, res) =>{
+	const {conversationId, senderId, text, files} = req.body;
+	
+  const message = await Message.create({
+    conversationId: conversationId,
+	senderId, text
+  });
+  return res.status(201).json({ message });
+}
+export const getallmess = async (req, res) =>{
+	const{conversationId} = req.params;
+    console.log({conversationId});
+      
+      const arrayCondition = [conversationId];
+      
+      
+      const messages = await Message.find({ conversationId: { $in: arrayCondition } });
 
+      return res.status(200).json({messages})
+}
 
 
