@@ -8,7 +8,7 @@ export const createConversation = async (req, res) => {
   const conversation = await Conversation.create({
     participants: userIds,
   });
-  return res.status(201).json({ conversation });
+  return res.status(201).json({ data: conversation });
 };
 
 export const getconversationbyuserid = async (req, res)=>{
@@ -20,7 +20,7 @@ export const getconversationbyuserid = async (req, res)=>{
       // Use the find method with the array condition
       const conversations = await Conversation.find({ participants: { $in: arrayCondition } });
 
-      return res.status(200).json({conversations})
+      return res.status(200).json({data: conversations})
       
 
 };

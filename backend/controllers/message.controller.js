@@ -62,7 +62,7 @@ export const getMessages = async (req, res) => {
 
 		const messages = conversation.messages;
 
-		res.status(200).json(messages);
+		res.status(200).json({data: messages});
 	} catch (error) {
 		console.log("Error in getMessages controller: ", error.message);
 		res.status(500).json({ error: "Internal server error" });
@@ -70,13 +70,14 @@ export const getMessages = async (req, res) => {
 };
 
 export const createMessage = async (req, res) =>{
-	const {conversationId, senderId, text, files} = req.body;
+	const {conversationId, senderId, text} = req.body;
 	
+	console.log(req.files);
   const message = await Message.create({
     conversationId: conversationId,
 	senderId, text
   });
-  return res.status(201).json({ message });
+  return res.status(201).json({data: message });
 }
 export const getallmess = async (req, res) =>{
 	const{conversationId} = req.params;
@@ -87,7 +88,7 @@ export const getallmess = async (req, res) =>{
       
       const messages = await Message.find({ conversationId: { $in: arrayCondition } });
 
-      return res.status(200).json({messages})
+      return res.status(200).json({data: messages})
 }
 
 
