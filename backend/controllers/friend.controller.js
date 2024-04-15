@@ -12,11 +12,22 @@ if(exInvitation){
 const invitation = new Friend({senderId, receiverId});
 await invitation.save();
 res.status(201).json({success: true, message:"add friend sent succesfully"});
+
     
 };
 
 export const deleteInvation = async (req, res)=>{
-const{userId} = req.params
-await Friend.findByIdAndDelete(userId);
+  try{
+const{senderId, receiverId} = req.params
+  const deleteInvation = await Friend.findOneAndDelete({senderId,receiverId});
+  if(!deleteInvation){
+    return res.status(404).json({message:"Invaition not found"});
+  }
+console.log({receiverId})
+console.log({senderId})
 res.status(200).json({message:'Invation cancelled successfully'});
+} catch (error) {
+  console.error('Error cancelling invitation:', error);
+  res.status(500).json({ error: 'Internal server error' });
+}
 };
