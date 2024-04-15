@@ -3,10 +3,10 @@ import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 import AWS from "aws-sdk";
-import fs from "fs";
 
+process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = "1";
+const upload = multer({ dest: 'uploads/' });
 const s3 = new AWS.S3();
-
 const bucketName = process.env.S3_BUCKET_NAME;
 AWS.config.update({
     region: process.env.REGION,
@@ -14,6 +14,17 @@ AWS.config.update({
     secretAccessKey: process.env.SECRET_ACCESS_KEY,
 });
 
+const storage = multer({
+	s3: s3,
+	bucket: process.env.AWS_BUCKET_NAME,
+	acl: 'public-read',
+	contentType: multer.AUTO_CONTENT_TYPE,
+	key: function (req, file, cb) {
+	  cb(null, 'uploads/' + Date.now().toString() + '-' + file.originalname);
+	},
+  });
+  
+  export { storage };
 
 
 
@@ -83,37 +94,7 @@ export const getMessages = async (req, res) => {
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
-export const upload = async (req,res) => {
-    const uploadedFiles = [];
-    try {
-        const files = req.files
-		console.log(files)
-        if (!files) {
-            throw new Error('No files found in the request');
-        }
 
-        for (const key in files) {
-            if (Object.hasOwnProperty.call(files, key)) {
-                const filePath = files[key].path;
-                if (filePath) {
-                    const fileData = fs.readFileSync(filePath); // Đọc dữ liệu từ file
-                    const fileName = files[key].originalname;
-
-                    // Chuyển đổi dữ liệu từ Buffer sang kiểu dữ liệu phù hợp
-                    const fileBody = fileData instanceof Buffer ? fileData : Buffer.from(fileData, 'binary');
-
-                    const fileUrl = await upload(fileBody, fileName); // Thay uploadToS3 bằng hàm upload thực tế
-                    uploadedFiles.push(fileUrl);
-                } else {
-                    console.error('filePath is not found for file with key:', key);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error uploading file:', error);
-    }
-    return uploadedFiles;
-};
 
 export const createMessage = async (req, res) =>{
 	const {conversationId, senderId, text} = req.body;
@@ -123,7 +104,7 @@ export const createMessage = async (req, res) =>{
     conversationId: conversationId,
 	senderId, text
   });
-  const uploadedFilesUrls = await upload(files);
+  const uploadedFilesUrls = upload.fields;
   return res.status(201).json({data: message, uploadedFiles: uploadedFilesUrls });
 }
 export const getallmess = async (req, res) =>{
@@ -165,8 +146,8 @@ export const revokedMessage = async (req, res)=>{
 			}
 		
 			// Đặt thời gian deleteAt của tin nhắn là thời gian hiện tại
-			message.deleteAt = new Date();
-			await message.save();
+			Message.deleteAt = new Date();
+			await Message.save();
 		
 			res.status(200).json({ success: true, message: 'Message deleted successfully' });
 		  } catch (error) {

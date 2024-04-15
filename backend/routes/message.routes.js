@@ -8,7 +8,7 @@ const upload = multer({ dest: 'uploads/' });
 
 router.get("/:id", protectRoute, getMessages);
 router.post("/send/:id", protectRoute, sendMessage);
-router.post("/", upload.array('files'),createMessage);
+router.post("/send-message", upload.array('files'),createMessage);
 router.get('/:conversationId/conversation',getallmess );
 router.get('/:senderId/message',revokedMessage );
 
