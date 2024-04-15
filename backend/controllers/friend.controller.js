@@ -4,6 +4,8 @@ import User from "../models/user.model.js";
 export const addFriend = async (req, res)=>{
         const{ senderId, receiverId} = req.body;
         const exInvitation = await Friend.findOne({senderId, receiverId});
+        console.log({senderId})
+        console.log({receiverId})
 if(exInvitation){
     return res.status(400).json({error:"add friend alrealy sent"});
 }
