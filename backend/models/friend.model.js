@@ -23,6 +23,6 @@ const friendSchema = new mongoose.Schema(
   }
 });
 
-const Friend = mongoose.model("Message", friendSchema);
+const Friend = mongoose.model("Friend", friendSchema);
 
 export default Friend;

@@ -1,8 +1,9 @@
 import express from "express";
-import { addFriend } from "../controllers/friend.controller";
+import { addFriend, deleteInvation } from "../controllers/friend.controller.js";
 
 const router = express.Router();
 
-router.post("/addFriend", addFriend);
+router.post("/", addFriend);
+router.delete('/:userId/user', deleteInvation);
 
 export default router;

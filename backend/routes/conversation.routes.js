@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.post("/", createConversation);
 router.get("/:userId/user", getconversationbyuserid);
-router.get("/:conversationId/conversations/:userId/user", deleteuser);
+router.delete("/:userId/:conversationId", deleteuser);
 
 export default router;

@@ -26,8 +26,7 @@ export const getconversationbyuserid = async (req, res)=>{
 };
 export const deleteuser = async(req, res)=>{
   try {
-    const conversationId = req.params;
-    const userId = req.params;
+    const {conversationId,userId} = req.params;
 
     // Kiểm tra xem người dùng tồn tại trong nhóm không
     const conversation = await Conversation.findById(conversationId);
@@ -35,13 +34,15 @@ export const deleteuser = async(req, res)=>{
       return res.status(404).json({ error: 'conversation not found' });
     }
 
-    const user = conversation.User.indexOf(userId);
-    if (user === -1) {
+    const userIndex = conversation.participants.indexOf(userId);
+    if (userIndex === -1) {
       return res.status(404).json({ error: 'User not found in conversation' });
     }
     // Xoá người dùng khỏi nhóm
-    conversation.User.splice(user, 1);
+    conversation.participants.splice(userId, 1);
     await conversation.save();
+return conversation();
+
  // Cập nhật thông tin người dùng
  
 } catch (error) {
