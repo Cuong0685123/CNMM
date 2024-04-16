@@ -6,14 +6,14 @@ const useSendMessage = () => {
   const [loading, setLoading] = useState(false);
   const { messages, setMessages, selectedConversation } = useConversation();
 
-  const sendMessage = async (message, senderId) => {
+  const sendMessage = async (message, images, senderId) => {
     const formData = new FormData();
-    // const blob = new Blob([e.target.file.files[0]], {
-    //   type: "application/octet-stream",
-    // });
+    const blob = new Blob([images[0]], {
+      type: "application/octet-stream",
+    });
     formData.append("conversationId", selectedConversation._id);
     formData.append("senderId", '661650e6d69480875da38dec');
-    // formData.append("files", blob);
+    formData.append("files", blob);
     formData.append("text", message);
     setLoading(true);
     try {

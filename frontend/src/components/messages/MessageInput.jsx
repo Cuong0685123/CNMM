@@ -5,24 +5,22 @@ import useSendMessage from "../../hooks/useSendMessage";
 
 const MessageInput = () => {
   const [message, setMessage] = useState("");
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState(null);
   const { loading, sendMessage } = useSendMessage();
   const [showImageInput, setShowImageInput] = useState(false);
 
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    setImages(e.target.files);
     setShowImageInput(false);
   };
 
   const handleSend = async () => {
-    if (!message && !image) return;
+    if (!message && images.length === 0) return;
 
-    if (image) {
-      const formData = new FormData();
-      formData.append("photo", image);
-      await sendMessage(formData);
+    if (images.length > 0) {
+      await sendMessage('', images);
     } else {
-      await sendMessage(message);
+      await sendMessage(message, []);
     }
 
     setMessage("");
