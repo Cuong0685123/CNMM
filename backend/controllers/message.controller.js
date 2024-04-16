@@ -6,28 +6,7 @@ import AWS from "aws-sdk";
 import { configDotenv } from "dotenv";
 configDotenv();
 
-// process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = "1";
-// // const upload = multer({ dest: 'uploads/' });
-// const s3 = new AWS.S3();
 
-// AWS.config.update({
-//     region: process.env.REGION,
-//     accessKeyId: process.env.ACCESS_KEY_ID,
-//     secretAccessKey: process.env.SECRET_ACCESS_KEY,
-// });
-
-// console.log(process.env.AWS_BUCKET_NAME)
-// const storage = multerS3({
-// 	s3: s3,
-// 	bucket: process.env.AWS_BUCKET_NAME,
-// 	acl: 'public-read',
-// 	contentType: multerS3.AUTO_CONTENT_TYPE,
-// 	key: function (req, file, cb) {
-// 	  cb(null, 'uploads/' + Date.now().toString() + '-' + file.originalname);
-// 	},
-//   });
-
-//   export { storage };
 
 export const sendMessage = async (req, res) => {
   try {
@@ -96,15 +75,19 @@ export const getMessages = async (req, res) => {
 };
 
 export const createMessage = async (req, res) => {
-  const { conversationId, senderId, text } = req.body;
+  const { conversationId, senderId, text = "" } = req.body;
   // console.log(files);
-  const uploadedFilesUrls = req.files.map((file) => file.location);
+  const uploadedFilesUrls = req.files?.map((file) => file.location) ?? [];
   const message = await Message.create({
     conversationId: conversationId,
     senderId,
     text,
     files: uploadedFilesUrls,
   });
+  const conversation = await Conversation.findById(conversationId);
+  conversation.messages.push(message._id);
+  await conversation.save();
+
   return res
     .status(201)
     .json({ data: message, uploadedFiles: uploadedFilesUrls });

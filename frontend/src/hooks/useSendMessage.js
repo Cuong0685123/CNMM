@@ -3,30 +3,35 @@ import useConversation from "../zustand/useConversation";
 import toast from "react-hot-toast";
 
 const useSendMessage = () => {
-	const [loading, setLoading] = useState(false);
-	const { messages, setMessages, conversationId } = useConversation();
+  const [loading, setLoading] = useState(false);
+  const { messages, setMessages, selectedConversation } = useConversation();
 
-	const sendMessage = async (message) => {
-		setLoading(true);
-		try {
-			const res = await fetch(`/api/messages`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({data: message }),
-			});
-			const data = await res.json();
-			if (data.error) throw new Error(data.error);
+  const sendMessage = async (message, senderId) => {
+    const formData = new FormData();
+    // const blob = new Blob([e.target.file.files[0]], {
+    //   type: "application/octet-stream",
+    // });
+    formData.append("conversationId", selectedConversation._id);
+    formData.append("senderId", '661650e6d69480875da38dec');
+    // formData.append("files", blob);
+    formData.append("text", message);
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/messages/send-message`, {
+        method: "POST",
+        body: formData,
+      });
+      const {data} = await res.json();
+      if (data.error) throw new Error(data.error);
 
-			setMessages([...messages, data]);
-		} catch (error) {
-			toast.error(error.message);
-		} finally {
-			setLoading(false);
-		}
-	};
+      setMessages([...messages, {senderId: '661650e6d69480875da38dec', text: data.text, createdAt: data.createdAt }]);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-	return { sendMessage, loading };
+  return { sendMessage, loading };
 };
 export default useSendMessage;
