@@ -4,12 +4,12 @@ import toast from "react-hot-toast";
 const useGetConversations = () => {
 	const [loading, setLoading] = useState(false);
 	const [conversations, setConversations] = useState([]);
-
+	const userId = JSON.parse(localStorage.getItem("chat-user"))._id;
 	useEffect(() => {
 		const getConversations = async () => {
 			setLoading(true);
 			try {
-				const res = await fetch("/api/conversations/661650e6d69480875da38dec/user");
+				const res = await fetch(`/api/conversations/${userId}/user`);
 				const data = await res.json();
 				if (data.error) {
 					throw new Error(data.error);
