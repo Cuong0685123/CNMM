@@ -1,6 +1,5 @@
-
+import Conversation from "../models/conversation.model.js";
 import Friend from "../models/friend.model.js";
-import User from "../models/user.model.js";
 export const addFriend = async (req, res)=>{
         const{ senderId, receiverId} = req.body;
         const exInvitation = await Friend.findOne({senderId, receiverId});
@@ -23,11 +22,41 @@ const{senderId, receiverId} = req.params
   if(!deleteInvation){
     return res.status(404).json({message:"Invaition not found"});
   }
-console.log({receiverId})
-console.log({senderId})
 res.status(200).json({message:'Invation cancelled successfully'});
 } catch (error) {
   console.error('Error cancelling invitation:', error);
   res.status(500).json({ error: 'Internal server error' });
 }
 };
+
+
+
+
+export const acceptInvitation = async (req, res) => {
+  try {
+    const { senderId, receiverId } = req.params;
+
+    // Update invitation status
+    const invitation = await Friend.findOneAndUpdate(
+      { senderId, receiverId },
+      { accepted: true },
+      { new: true }
+    );
+
+    if (!invitation) {
+      return res.status(404).json({ message: 'Invitation not found' });
+    }
+
+    // Create conversation for both users
+    const conversation = new Conversation({
+      participants: [senderId, receiverId],
+    });
+    await conversation.save();
+
+    res.status(200).json({ message: 'Invitation accepted successfully' });
+  } catch (error) {
+    console.error('Error accepting invitation:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+

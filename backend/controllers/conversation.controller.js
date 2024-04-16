@@ -14,14 +14,9 @@ export const createConversation = async (req, res) => {
 export const getconversationbyuserid = async (req, res)=>{
     const{userId} = req.params;
     console.log({userId});
-     
       const arrayCondition = [userId];
-      
-      
       const conversations = await Conversation.find({ participants: { $in: arrayCondition } });
-
       return res.status(200).json({data: conversations})
-      
 
 };
 export const deleteuser = async(req, res)=>{
